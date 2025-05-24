@@ -13,4 +13,6 @@ def main(page: ft.Page):
     from login import login_view
     page.add(login_view(page))
 
+
 ft.app(target=main, view=ft.AppView.FLET_APP)
+

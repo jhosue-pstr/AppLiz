@@ -1,13 +1,29 @@
 import flet as ft
 from db import conectar_db
 import time
-
+from datetime import datetime, date
 
 def validar_login(email, contrasena):
     conn = conectar_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM usuarios WHERE email=%s AND contrasena=%s", (email, contrasena))
     usuario = cursor.fetchone()
+
+    if usuario:
+        hoy = date.today()
+        ultimo_acceso = usuario.get('ultimo_acceso')
+        if not ultimo_acceso or ultimo_acceso < hoy:
+            try:
+                cursor.execute(
+                    "UPDATE usuarios SET monedas = monedas + 1, ultimo_acceso = %s WHERE id = %s",
+                    (hoy, usuario['id'])
+                )
+                conn.commit()
+                usuario['monedas'] += 1
+                usuario['ultimo_acceso'] = hoy
+            except Exception as e:
+                print("Error al actualizar monedas:", e)
+
     cursor.close()
     conn.close()
     return usuario
