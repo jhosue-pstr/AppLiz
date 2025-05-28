@@ -1,6 +1,5 @@
 import flet as ft
 from login import validar_login
-from views import main_view 
 
 def main(page: ft.Page):
     page.title = "App Liz"

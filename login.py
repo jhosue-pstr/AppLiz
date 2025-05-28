@@ -99,7 +99,15 @@ def register_view(page: ft.Page):
         width=300,
     )
     horas = ft.TextField(label="¿Cuántas horas al día trabajas y estudias?", width=300)
-    estres = ft.TextField(label="Frecuencia de estrés (Autopercibido)", width=300)
+    estres = ft.Dropdown(
+    label="Frecuencia de estrés (Autopercibido)",
+    options=[
+        ft.dropdown.Option("Alto"),
+        ft.dropdown.Option("Moderado"),
+        ft.dropdown.Option("Bajo"),
+    ],
+    width=300,
+)
     
     acepta_checkbox = ft.Checkbox(label="Acepto términos y condiciones")
     acepta = ft.Row([acepta_checkbox], alignment=ft.MainAxisAlignment.CENTER)
