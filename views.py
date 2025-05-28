@@ -2,14 +2,11 @@ import flet as ft
 from db import *
 from login import *
 
-
 def main_view(page: ft.Page, usuario: dict):
-  
     page.clean()
 
-    logo = ft.Image(src="assets/logo.jpeg", width=100, height=100)
-
-    bienvenida = ft.Text(f"Bienvenido, {usuario['nombre']} 👋", size=24)
+    logo = ft.Image(src="assets/logo.jpeg", width=150, height=150)
+    bienvenida = ft.Text(f"Bienvenido, {usuario['nombre']} 👋", size=24, text_align="center")
     monedas = ft.Text(f"💰 Monedas: {usuario['monedas']}", size=18, weight="bold")
 
     def cerrar_sesion(e):
@@ -17,23 +14,33 @@ def main_view(page: ft.Page, usuario: dict):
         page.add(login_view(page))
         page.update()
 
-    cerrar_btn = ft.ElevatedButton("Cerrar sesión", on_click=cerrar_sesion, style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400, color="white"))
-
-    def ir_perfil(e):
-        perfil_view(page, usuario)
-
-    def ir_diario(e):
-        diario_view(page, usuario)
-
-    def ir_herramientas(e):
-        gestion_view(page, usuario)
-
+    cerrar_btn = ft.ElevatedButton(
+        "Cerrar sesión",
+        on_click=cerrar_sesion,
+        style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400, color="white")
+    )
+    fila_superior = ft.Row(
+        [ft.Container(expand=True), cerrar_btn],
+        alignment=ft.MainAxisAlignment.END
+    )
+    logo_centrado = ft.Row(
+        [logo],
+        alignment=ft.MainAxisAlignment.CENTER
+    )
+    bienvenida_centrada = ft.Row(
+        [bienvenida],
+        alignment=ft.MainAxisAlignment.CENTER
+    )
+    monedas_derecha = ft.Row(
+        [ft.Container(expand=True), monedas],
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+    )
     opciones = [
-        ("👤 Perfil", ft.Colors.PURPLE_400, ir_perfil),
-        ("📓 Diario / Notas", ft.Colors.RED_400, ir_diario),
+        ("👤 Perfil", ft.Colors.PURPLE_400, lambda e: perfil_view(page, usuario)),
+        ("📓 Diario / Notas", ft.Colors.RED_400, lambda e: diario_view(page, usuario)),
         ("🌐 Comunidad", ft.Colors.CYAN_300, lambda e: print("Ir a Comunidad")),
-        ("🧰 Herramientas de Gestión", ft.Colors.GREEN_400, ir_herramientas),
-        ("📚 Recursos de Apoyo", ft.Colors.BLUE_400, lambda e: print("Ir a Recursos")),
+        ("🧰 Herramientas de Gestión", ft.Colors.GREEN_400, lambda e: gestion_view(page, usuario)),
+        ("📚 Recursos de Apoyo", ft.Colors.BLUE_400, lambda e: recursos_view(page, usuario)),
     ]
 
     botones = []
@@ -59,11 +66,12 @@ def main_view(page: ft.Page, usuario: dict):
     page.add(
         ft.Column(
             [
-                ft.Row([logo, ft.Container(expand=True), cerrar_btn]),
-                bienvenida,
-                ft.Row([monedas]),
+                fila_superior,
+                logo_centrado,
+                bienvenida_centrada,
+                monedas_derecha,
                 ft.Divider(height=10),
-                grid
+                grid,
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=20,
@@ -93,16 +101,15 @@ def perfil_view(page: ft.Page, usuario: dict):
     ])
 
     opciones = [
-    ("Información Personal", lambda e: informacion_personal_view(page, usuario)),
-    ("Inicio de Sesión y Seguridad", None),
-    ("Pagos y Cobros", None),
-    ("Accesibilidad", None),
-    ("Obtén ayuda", None),
-    ("Traducción", None),
-    ("Política de privacidad", None),
-    ("Licencias de código abierto", None)
+        ("Información Personal", lambda e: informacion_personal_view(page, usuario)),
+        ("Inicio de Sesión y Seguridad", None),
+        ("Pagos y Cobros", None),
+        ("Accesibilidad", None),
+        ("Obtén ayuda", None),
+        ("Traducción", None),
+        ("Política de privacidad", None),
+        ("Licencias de código abierto", None)
     ]
-
     configuraciones = ft.Column([
         ft.Text("Configuración", size=18, weight="bold"),
         *[
@@ -117,16 +124,25 @@ def perfil_view(page: ft.Page, usuario: dict):
             )
             for opcion in opciones
         ]
-    ])
+    ], spacing=10)
+
+    configuraciones_centrada = ft.Row(
+        [configuraciones],
+        alignment=ft.MainAxisAlignment.CENTER
+    )
+
     page.add(
-    ft.Column([
-        header,
-        ft.Divider(),
-        configuraciones,
-        ft.Divider(),
-        ft.ElevatedButton("Volver al inicio", on_click=lambda e: main_view(page, usuario))
-    ], scroll=ft.ScrollMode.AUTO, spacing=20, expand=True)
-    )      
+        ft.Column([
+            header,
+            ft.Divider(),
+            configuraciones_centrada,
+            ft.Divider(),
+            ft.Row(
+                [ft.ElevatedButton("Volver al inicio", on_click=lambda e: main_view(page, usuario))],
+                alignment=ft.MainAxisAlignment.CENTER
+            )
+        ], scroll=ft.ScrollMode.AUTO, spacing=20, expand=True)
+    )
     page.update()
 
 def informacion_personal_view(page: ft.Page, usuario: dict):
@@ -730,5 +746,215 @@ def nuevo_evento_view(page: ft.Page, usuario: dict):
             ft.ElevatedButton("Guardar", icon=ft.Icons.SAVE, on_click=guardar),
             ft.ElevatedButton("Cancelar", icon=ft.Icons.CANCEL, on_click=cancelar),
         ], spacing=20)
+    )
+    page.update()
+
+
+
+
+
+
+
+import random
+
+def recursos_view(page: ft.Page, usuario: dict):
+    from views import main_view
+
+    def volver_inicio(e):
+        main_view(page, usuario)
+
+    def ir_frase_dia(e):
+        frase_dia_view(page, usuario)
+
+    def ir_enlaces_utiles(e):
+        enlaces_utiles_view(page, usuario)
+
+    def ir_video(e):
+        video_view(page, usuario)
+
+    def ir_libros(e):
+        libros_view(page, usuario)
+
+    def ir_profesional(e):
+        ayuda_profesional_view(page, usuario)
+
+    def ir_test(e):
+        test_emocional_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Text("📚 Recursos de Apoyo", size=30, weight="bold", text_align="center"),
+
+                ft.ElevatedButton("🔗 Enlaces útiles", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_enlaces_utiles),
+                ft.ElevatedButton("🧠 Frase del día", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_frase_dia),
+                ft.ElevatedButton("▶️ Video recomendado", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_video),
+                ft.ElevatedButton("📘 Libros y PDFs", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_libros),
+                ft.ElevatedButton("🆘 Ayuda profesional", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_profesional),
+                ft.ElevatedButton("📝 Test emocional", style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=30)), width=300, on_click=ir_test),
+
+                ft.ElevatedButton("⬅️ Volver", on_click=volver_inicio)
+            ],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20
+        )
+    )
+
+
+
+def frase_dia_view(page: ft.Page, usuario: dict):
+    frases = [
+        "Cuida tu mente como cuidas tu cuerpo.",
+        "Pequeños pasos también te acercan a tu meta.",
+        "Respira. Todo pasa.",
+        "Tu salud mental es prioridad.",
+        "Eres más fuerte de lo que piensas.",
+        "Está bien pedir ayuda.",
+    ]
+    frase = random.choice(frases)
+
+    def volver(e):
+        recursos_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column([
+            ft.Text("🧠 Frase del Día", size=28, weight="bold"),
+            ft.Container(
+                content=ft.Text(f'"{frase}"', size=20, italic=True),
+                bgcolor=ft.Colors.BLUE_100,
+                padding=20,
+                border_radius=10
+            ),
+            ft.ElevatedButton("⬅️ Volver", on_click=volver)
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        alignment=ft.MainAxisAlignment.CENTER,
+        spacing=20)
+    )
+
+
+
+def enlaces_utiles_view(page: ft.Page, usuario: dict):
+    def volver(e):
+        recursos_view(page, usuario)
+
+    def abrir(url):
+        def handler(e):
+            page.launch_url(url)
+        return handler
+
+    page.clean()
+    page.add(
+        ft.Column([
+            ft.Text("🔗 Enlaces Útiles", size=28, weight="bold"),
+            ft.ElevatedButton("Ansiedad: Guía de ayuda", on_click=abrir("https://www.who.int/es/news-room/questions-and-answers/item/mental-health-strengthening-our-response")),
+            ft.ElevatedButton("Depresión: Apoyo y recursos", on_click=abrir("https://www.unicef.org/es/salud-mental")),
+            ft.ElevatedButton("Mindfulness para principiantes", on_click=abrir("https://mindful.org/mindfulness-how-to-do-it/")),
+            ft.ElevatedButton("⬅️ Volver", on_click=volver)
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=15)
+    )
+
+
+def video_view(page: ft.Page, usuario: dict):
+    def volver(e):
+        recursos_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Text("▶️ Video recomendado", size=28, weight="bold", text_align="center"),
+                ft.Text("Aprende a manejar el estrés con este video informativo.", size=18),
+                ft.ElevatedButton("Ver video", on_click=lambda e: page.launch_url("https://www.youtube.com/watch?v=hnpQrMqDoqE")),
+                ft.ElevatedButton("⬅️ Volver", on_click=volver)
+            ],
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+    )
+    page.update()
+
+
+
+def libros_view(page: ft.Page, usuario: dict):
+    def volver(e):
+        recursos_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Text("📚 Libros y PDFs Gratuitos", size=28, weight="bold", text_align="center"),
+                ft.ListView(
+                    controls=[
+                        ft.ListTile(title=ft.Text("Ebook: Inteligencia emocional"), on_click=lambda e: page.launch_url("https://www.freelibros.net/psicologia/inteligencia-emocional-pdf")),
+                        ft.ListTile(title=ft.Text("PDF: Aprende a calmarte"), on_click=lambda e: page.launch_url("https://drive.google.com/file/d/1LM7U7xV...")),
+                    ],
+                    height=150
+                ),
+                ft.ElevatedButton("⬅️ Volver", on_click=volver)
+            ],
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+    )
+    page.update()
+
+
+
+
+def ayuda_profesional_view(page: ft.Page, usuario: dict):
+    def volver(e):
+        recursos_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Text("🆘 Ayuda Profesional", size=28, weight="bold", text_align="center"),
+                ft.Text("Puedes contactar a un profesional de salud mental en los siguientes recursos:", size=18),
+                ft.ListView(
+                    controls=[
+                        ft.ListTile(title=ft.Text("Psicólogos Perú"), on_click=lambda e: page.launch_url("https://www.psicologosperu.pe")),
+                        ft.ListTile(title=ft.Text("Línea 100 – Ayuda emocional en Perú"), on_click=lambda e: page.launch_url("https://www.linea100.gob.pe")),
+                    ],
+                    height=100
+                ),
+                ft.ElevatedButton("⬅️ Volver", on_click=volver)
+            ],
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+    )
+    page.update()
+
+
+
+
+def test_emocional_view(page: ft.Page, usuario: dict):
+    def volver(e):
+        recursos_view(page, usuario)
+
+    page.clean()
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Text("📝 Test Emocional", size=28, weight="bold", text_align="center"),
+                ft.Text("Realiza este test para conocer tu estado emocional actual.", size=18),
+                ft.ElevatedButton("Iniciar Test de Depresión de Beck", on_click=lambda e: page.launch_url("https://www.testpsicologicos.com/test-de-depresion-beck/")),
+                ft.ElevatedButton("⬅️ Volver", on_click=volver)
+            ],
+            spacing=20,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
     )
     page.update()
