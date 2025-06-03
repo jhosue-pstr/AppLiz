@@ -1,0 +1,10 @@
+Flask==2.3.2            # Framework principal
+Flask-Cors==4.0.0       # Para permitir peticiones desde Flutter (CORS)
+PyMySQL==1.0.2          # Conector MySQL (mejor que mysql-connector-python para Flask)
+Flask-SQLAlchemy==3.0.3 # ORM para manejar la DB fácilmente
+python-dotenv==1.0.0    # Manejar variables de entorno (.env)
+Flask-JWT-Extended==4.5.2
+marshmallow==3.19.0
+flask-socketio==5.3.4
+Flask-Mail==0.9.1
+pytest==7.4.0
