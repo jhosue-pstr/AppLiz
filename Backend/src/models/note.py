@@ -1,16 +1,16 @@
 from src.config.database import Database
 
-class Event:
-    @staticmethod   
-    def create(user_id, title, description, start_datetime, end_datetime=None, location=None):
+class Note:
+    @staticmethod
+    def create(user_id, title, content, color="#FFFFFF", pinned=False):
         connection = Database.get_connection()
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                """INSERT INTO events 
-                (user_id, title, description, start_datetime, end_datetime, location) 
-                VALUES (%s, %s, %s, %s, %s, %s)""",
-                (user_id, title, description, start_datetime, end_datetime, location)
+                """INSERT INTO notes 
+                (user_id, title, content, color, pinned) 
+                VALUES (%s, %s, %s, %s, %s)""",
+                (user_id, title, content, color, pinned)
             )
             connection.commit()
             return cursor.lastrowid
@@ -23,26 +23,26 @@ class Event:
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                """SELECT id, title, description, start_date, end_date, location 
-                FROM events WHERE user_id = %s""",
+                "SELECT id, title, content FROM notes WHERE user_id = %s",
                 (user_id,)
             )
             return cursor.fetchall()
         finally:
             Database.close_connection(connection, cursor)
 
+    
+
     @staticmethod
-    def update(event_id, user_id, data):
+    def update(note_id, user_id, data):
         connection = Database.get_connection()
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                """UPDATE events 
-                SET title=%s, description=%s, start_date=%s, end_date=%s, location=%s
-                WHERE id=%s AND user_id=%s""",
-                (data.get('title'), data.get('description'), 
-                 data.get('start_date'), data.get('end_date'), 
-                 data.get('location'), event_id, user_id)
+                """UPDATE notes 
+                SET title = %s, content = %s, color = %s, pinned = %s 
+                WHERE id = %s AND user_id = %s""",
+                (data['title'], data['content'], data.get('color'), data.get('pinned', False), 
+                note_id, user_id)
             )
             connection.commit()
             return cursor.rowcount > 0
@@ -50,13 +50,13 @@ class Event:
             Database.close_connection(connection, cursor)
 
     @staticmethod
-    def delete(event_id, user_id):
+    def delete(note_id, user_id):
         connection = Database.get_connection()
         cursor = connection.cursor()
         try:
             cursor.execute(
-                "DELETE FROM events WHERE id = %s AND user_id = %s",
-                (event_id, user_id)
+                "DELETE FROM notes WHERE id = %s AND user_id = %s",
+                (note_id, user_id)
             )
             connection.commit()
             return cursor.rowcount > 0
@@ -64,16 +64,15 @@ class Event:
             Database.close_connection(connection, cursor)
 
     @staticmethod
-    def get_upcoming(user_id, limit=5):
+    def search(user_id, query):
         connection = Database.get_connection()
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                """SELECT id, title, start_date 
-                FROM events 
-                WHERE user_id = %s AND start_date >= NOW() 
-                ORDER BY start_date ASC LIMIT %s""",
-                (user_id, limit)
+                """SELECT id, title, content 
+                FROM notes 
+                WHERE user_id = %s AND (title LIKE %s OR content LIKE %s)""",
+                (user_id, f"%{query}%", f"%{query}%")
             )
             return cursor.fetchall()
         finally:
