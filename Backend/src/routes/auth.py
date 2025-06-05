@@ -78,7 +78,6 @@ def login():
             'exp': datetime.utcnow() + JWT_EXPIRATION
         }, JWT_SECRET, algorithm='HS256')
 
-        # Dar monedas diarias (si no las ha recibido hoy)
         PointSystem.add_daily_coins(user['id'])
 
         return jsonify({"token": token, "user_id": user['id'], "message": "¡Bienvenido! +3 monedas"}), 200

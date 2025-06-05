@@ -1,6 +1,7 @@
 # Entorno virtual
 venv/
 .env
+.env.*
 
 # Archivos compilados de Python
 __pycache__/
@@ -21,3 +22,27 @@ Thumbs.db
 # Archivos temporales y caché
 *.tmp
 *.swp
+
+# Flutter build files
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Android y iOS específicas
+android/.gradle/
+android/app/*.keystore
+ios/Pods/
+ios/.symlinks/
+macos/Flutter/ephemeral/
+
+# Archivos generados por Flutter / Dart
+*.iml
+*.lock
+
+# Archivos de configuración sensibles
+secrets.json
+config.json
+credentials.json
+token.json
