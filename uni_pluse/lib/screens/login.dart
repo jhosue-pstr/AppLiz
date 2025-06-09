@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../services/api.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,34 +8,56 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
   Future<void> _login() async {
-    setState(() => _isLoading = true);
+    final String apiUrl = 'http://127.0.0.1:5000/api/auth/login';
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      final response = await ApiService.post('api/auth/login', {
-        'email': _emailController.text.trim(),
-        'password': _passwordController.text,
-      });
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
+      );
 
-      // Guardar token
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', response['token']);
-      ApiService.setToken(response['token']);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        final userId = data['user_id'];
 
-      // Navegar a Home (lo implementaremos después)
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('¡Bienvenido!')));
+        // Aquí puedes guardar el token en SharedPreferences o navegar a otra pantalla
+        print('Token: $token');
+        print('User ID: $userId');
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Inicio de sesión exitoso')));
+
+        // Navegar a otra pantalla (ejemplo)
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        final error = jsonDecode(response.body)['error'];
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $error')));
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
     } finally {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -44,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('Iniciar Sesión')),
       body: Padding(
-        padding: EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -54,7 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Email',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 20),
             TextField(
@@ -66,15 +87,15 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
             ),
             SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _login,
-              child: _isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Ingresar'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Ingresar'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                    ),
+                  ),
           ],
         ),
       ),

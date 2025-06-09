@@ -20,10 +20,21 @@ def register():
     
     try:
         data = request.get_json()
+
         email = data['email']
         password = data['password']
         name = data['name']
         lastname_paternal = data['lastname_paternal']
+
+        lastname_maternal = data.get('lastname_maternal', None)
+        avatar_url = data.get('avatar_url', None)
+        bio = data.get('bio', None)
+        currently_working = data.get('currently_working', 0)
+        working_hours_per_day = data.get('working_hours_per_day', 0)
+        stress_frequency = data.get('stress_frequency', 'medio')
+        points = data.get('points', 0)
+        language = data.get('language', 'es')
+        theme = data.get('theme', 'light')
 
         cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
         if cursor.fetchone():
@@ -33,12 +44,17 @@ def register():
 
         query = """
             INSERT INTO users 
-            (email, password_hash, name, lastname_paternal, created_at)
-            VALUES (%s, %s, %s, %s, NOW())
+            (email, password_hash, name, lastname_paternal, lastname_maternal, avatar_url, bio, 
+            currently_working, working_hours_per_day, stress_frequency, points, language, theme, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
         """
-        cursor.execute(query, (email, hashed_password, name, lastname_paternal))
+        cursor.execute(query, (
+            email, hashed_password, name, lastname_paternal, lastname_maternal, avatar_url, bio,
+            currently_working, working_hours_per_day, stress_frequency, points, language, theme
+        ))
         connection.commit()
 
+        # Generar token JWT
         user_id = cursor.lastrowid
         token = jwt.encode({
             'user_id': user_id,
@@ -51,7 +67,6 @@ def register():
         return jsonify({"error": str(err)}), 500
     finally:
         Database.close_connection(connection, cursor)
-
 
 
 
