@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -32,18 +33,24 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final token = data['token'];
-        final userId = data['user_id'];
+        final name = data['name'];
+        final points = data['points']; // Obtén los puntos del usuario
 
-        // Aquí puedes guardar el token en SharedPreferences o navegar a otra pantalla
-        print('Token: $token');
-        print('User ID: $userId');
+        // Guarda los datos en SharedPreferences si es necesario
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+        await prefs.setString('name', name);
+        await prefs.setInt('points', points);
 
-        ScaffoldMessenger.of(
+        // Navega a HomeScreen con el nombre y los puntos del usuario
+        Navigator.pushReplacementNamed(
           context,
-        ).showSnackBar(SnackBar(content: Text('Inicio de sesión exitoso')));
-
-        // Navegar a otra pantalla (ejemplo)
-        Navigator.pushReplacementNamed(context, '/home');
+          '/home',
+          arguments: {
+            'name': data['name'], // Nombre del usuario
+            'points': data['points'], // Puntos del usuario
+          },
+        );
       } else {
         final error = jsonDecode(response.body)['error'];
         ScaffoldMessenger.of(
