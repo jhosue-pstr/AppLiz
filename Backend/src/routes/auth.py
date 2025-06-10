@@ -68,8 +68,6 @@ def register():
     finally:
         Database.close_connection(connection, cursor)
 
-
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     connection = Database.get_connection()
@@ -80,25 +78,52 @@ def login():
         email = data['email']
         password = data['password']
 
-        cursor.execute("SELECT id, password_hash FROM users WHERE email = %s", (email,))
+        cursor.execute("""
+            SELECT id, email, name, lastname_paternal, lastname_maternal,
+                   avatar_url, bio, currently_working, working_hours_per_day,
+                   stress_frequency, points, language, theme, password_hash, last_login
+            FROM users WHERE email = %s
+        """, (email,))
         user = cursor.fetchone()
-        if not user:
-            return jsonify({"error": "Credenciales inválidas"}), 401
 
-        if not bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            return jsonify({"error": "Credenciales inválidas"}), 401
+        if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            today = datetime.now().date()
+            last_login = user['last_login'].date() if user['last_login'] else None
+            
+            points_to_add = 0
+            if last_login != today:
+                points_to_add = 3  # Dar 3 puntos por primer login del día
+                cursor.execute("UPDATE users SET points = points + %s, last_login = NOW() WHERE id = %s", 
+                             (points_to_add, user['id']))
+                connection.commit()
+                user['points'] += points_to_add  
 
-        token = jwt.encode({
-            'user_id': user['id'],
-            'exp': datetime.utcnow() + JWT_EXPIRATION
-        }, JWT_SECRET, algorithm='HS256')
+            token = jwt.encode({
+                'user_id': user['id'],
+                'exp': datetime.utcnow() + JWT_EXPIRATION
+            }, JWT_SECRET, algorithm='HS256')
 
-        PointSystem.add_daily_coins(user['id'])
+            return jsonify({
+    'token': token,
+    'user_id': user['id'],
+    'email': user['email'],
+    'name': user['name'],
+    'lastname_paternal': user['lastname_paternal'],
+    'lastname_maternal': user['lastname_maternal'],
+    'avatar_url': user['avatar_url'] if user['avatar_url'] else "assets/images/avatar1.png",
+    'bio': user['bio'],
+    'currently_working': user['currently_working'],
+    'working_hours_per_day': user['working_hours_per_day'],
+    'stress_frequency': user['stress_frequency'],
+    'points': user['points'],
+    'language': user['language'],
+    'theme': user['theme'],
+    'daily_points_added': points_to_add
+}), 200
 
-        return jsonify({"token": token, "user_id": user['id'], "message": "¡Bienvenido! +3 monedas"}), 200
-
-    except mysql.connector.Error as err:
-        return jsonify({"error": str(err)}), 500
-
+        else:
+            return jsonify({'error': 'Credenciales inválidas'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     finally:
         Database.close_connection(connection, cursor)

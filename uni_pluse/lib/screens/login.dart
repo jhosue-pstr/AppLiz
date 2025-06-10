@@ -32,23 +32,58 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final token = data['token'];
-        final name = data['name'];
-        final points = data['points']; // Obtén los puntos del usuario
-
-        // Guarda los datos en SharedPreferences si es necesario
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        await prefs.setString('name', name);
-        await prefs.setInt('points', points);
 
-        // Navega a HomeScreen con el nombre y los puntos del usuario
+        await prefs.setString('token', data['token']);
+        await prefs.setString('email', data['email']);
+        await prefs.setString('password_hash', data['password_hash'] ?? '');
+        await prefs.setString('name', data['name']);
+        await prefs.setString(
+          'lastname_paternal',
+          data['lastname_paternal'] ?? '',
+        );
+        await prefs.setString(
+          'lastname_maternal',
+          data['lastname_maternal'] ?? '',
+        );
+        await prefs.setString('avatar_url', data['avatar_url'] ?? '');
+        await prefs.setString('bio', data['bio'] ?? '');
+        await prefs.setBool(
+          'currently_working',
+          data['currently_working'] == 1,
+        );
+        await prefs.setInt(
+          'working_hours_per_day',
+          data['working_hours_per_day'] ?? 0,
+        );
+        await await prefs.setInt('points', data['points']);
+
+        if (data['daily_points_added'] > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '¡Has ganado ${data['daily_points_added']} puntos por iniciar sesión hoy!',
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+
         Navigator.pushReplacementNamed(
           context,
           '/home',
           arguments: {
-            'name': data['name'], // Nombre del usuario
-            'points': data['points'], // Puntos del usuario
+            'token': data['token'],
+            'email': data['email'],
+            'password_hash': data['password_hash'] ?? '',
+            'name': data['name'],
+            'lastname_paternal': data['lastname_paternal'] ?? '',
+            'lastname_maternal': data['lastname_maternal'] ?? '',
+            'avatar_url': data['avatar_url'] ?? '',
+            'bio': data['bio'] ?? '',
+            'currently_working': data['currently_working'] == 1,
+            'working_hours_per_day': data['working_hours_per_day'] ?? 0,
+            'points': data['points'],
           },
         );
       } else {

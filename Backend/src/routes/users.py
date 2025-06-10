@@ -21,7 +21,14 @@ def update_profile():
         return jsonify({"error": "Datos requeridos"}), 400
     
     try:
-        allowed_fields = ['name', 'lastname_paternal', 'email']
+        allowed_fields = ['name',
+            'lastname_paternal',
+            'lastname_maternal',
+            'avatar_url',
+            'bio',
+            'currently_working',
+            'working_hours_per_day',
+            'stress_frequency']
         update_data = {k: v for k, v in data.items() if k in allowed_fields}
         
         if not update_data:
