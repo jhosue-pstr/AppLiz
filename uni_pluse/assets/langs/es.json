@@ -1,7 +1,7 @@
 {
-  "inicio": {
-    "bienvenido": "Bienvenido",
-    "iniciar": "Iniciar sesión",
-    "registrarse": "Registrarse"
-  }
+  "hello": "Hola",
+  "welcome": "Bienvenido a la aplicación",
+  "change_language": "Cambiar idioma",
+  "profile": "Tu perfil",
+  "personal_info": "Información personal"
 }

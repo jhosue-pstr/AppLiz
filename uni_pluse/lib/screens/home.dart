@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'perfil.dart';
+import 'diario.dart';
 
 class HomeScreen extends StatelessWidget {
   final String email;
@@ -188,7 +189,18 @@ class HomeScreen extends StatelessWidget {
                 child: _buildColorBlock('Perfil', Colors.red.shade700),
               ),
               SizedBox(height: 10),
-              _buildColorBlock('Fuerza Bravo', Colors.blue.shade700),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DiarioScreen()),
+                  );
+                },
+                child: _buildColorBlock(
+                  'Diario emocional',
+                  Colors.blue.shade700,
+                ),
+              ),
               SizedBox(height: 10),
               _buildColorBlock('Fuerza Charlie', Colors.green.shade700),
               SizedBox(height: 10),

@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import 'informacion.dart'; // 👈 Asegúrate de tener este archivo creado
+import 'informacion.dart';
+import 'seguridad.dart';
+import 'accesibilidad.dart';
+import 'pagos.dart';
+import 'ayuda.dart';
+import 'traduccion.dart';
+import 'privacidad.dart';
+import 'licencias.dart';
 
 class PerfilScreen extends StatelessWidget {
   final String email;
@@ -153,6 +160,43 @@ class PerfilScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const InformacionScreen()),
+          );
+        } else if (title == 'Inicio de Sesión y Seguridad') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SeguridadScreen()),
+          );
+        } else if (title == 'Accesibilidad') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AccesibilidadScreen(),
+            ),
+          );
+        } else if (title == 'Pagos y Cobros') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PagosScreen()),
+          );
+        } else if (title == 'Obten ayuda') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AyudaScreen()),
+          );
+        } else if (title == 'Traducción') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const TraduccionScreen()),
+          );
+        } else if (title == 'Política de privacidad') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PrivacidadScreen()),
+          );
+        } else if (title == 'Licencias de código abierto') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LicenciasScreen()),
           );
         }
       },
