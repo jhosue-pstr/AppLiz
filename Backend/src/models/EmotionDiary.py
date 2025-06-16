@@ -2,20 +2,21 @@ from src.config.database import Database
 from datetime import datetime, timedelta
 import json 
 
+
+
 class EmotionDiary:
     @staticmethod
     def log_emotion(user_id, emotion, intensity, content, tags=None):
         connection = Database.get_connection()
         cursor = connection.cursor(dictionary=True)
         try:
-            # Convierte la lista a JSON string
             tags_json = json.dumps(tags, ensure_ascii=False) if tags else None
         
             cursor.execute(
                 """INSERT INTO diary_entries 
                 (user_id, emotion, intensity, content, tags, created_at)
                 VALUES (%s, %s, %s, %s, %s, NOW())""",
-                (user_id, emotion, intensity, content, tags_json)  # Usa el JSON string
+                (user_id, emotion, intensity, content, tags_json)  
             )
             connection.commit()
             return cursor.lastrowid
@@ -35,12 +36,17 @@ class EmotionDiary:
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                """SELECT emotion, intensity, created_at 
+                """SELECT 
+                    id,
+                    emotion, 
+                    intensity,
+                    content,
+                    tags,
+                    DATE_FORMAT(created_at, '%Y-%m-%d') as formatted_date
                 FROM diary_entries 
                 WHERE user_id = %s AND created_at >= %s
-                ORDER BY created_at""",
-                (user_id, datetime.now() - timedelta(days=days))
-            )
+                ORDER BY created_at DESC""",
+                (user_id, datetime.now() - timedelta(days=days)))
             return cursor.fetchall()
         finally:
             Database.close_connection(connection, cursor)
@@ -66,6 +72,25 @@ class EmotionDiary:
 
 
 
+    @staticmethod
+    def get_weekly_summary(user_id):
+        connection = Database.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        try:
+            cursor.execute(
+                """SELECT 
+                    DAYNAME(created_at) as day,
+                    emotion,
+                    COUNT(*) as count,
+                    AVG(intensity) as avg_intensity
+                FROM diary_entries
+                WHERE user_id = %s AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                GROUP BY day, emotion
+                ORDER BY DAYOFWEEK(created_at)""",
+                (user_id,))
+            return cursor.fetchall()
+        finally:
+            Database.close_connection(connection, cursor)
 
     @staticmethod
     def detect_patterns(user_id):
@@ -91,3 +116,7 @@ class EmotionDiary:
             }
         finally:
             Database.close_connection(connection, cursor)    
+
+
+
+

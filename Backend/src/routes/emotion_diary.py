@@ -51,3 +51,16 @@ def get_patterns():
         return jsonify(patterns), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+@emotion_bp.route('/weekly-summary/<int:user_id>')
+def weekly_summary(user_id):
+    data = EmotionDiary.get_weekly_summary(user_id)
+    return jsonify({'weekly_summary': data})        
+
+
+@emotion_bp.route('/patterns/<int:user_id>')
+def patterns(user_id):
+    patterns = EmotionDiary.detect_patterns(user_id)
+    return jsonify(patterns)

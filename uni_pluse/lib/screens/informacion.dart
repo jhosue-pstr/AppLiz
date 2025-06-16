@@ -155,12 +155,6 @@ class _InformacionScreenState extends State<InformacionScreen> {
                 label: 'Apellido Materno',
               ),
               _buildEditableField(
-                controller: emailCtrl,
-                label: 'Email',
-                isRequired: true,
-                isEmail: true,
-              ),
-              _buildEditableField(
                 controller: bioCtrl,
                 label: 'Biografía',
                 maxLines: 3,

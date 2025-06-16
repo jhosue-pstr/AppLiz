@@ -193,7 +193,9 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DiarioScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => DiarioScreen(userId: 1),
+                    ),
                   );
                 },
                 child: _buildColorBlock(

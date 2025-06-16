@@ -8,9 +8,12 @@ class User:
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute("""
-                SELECT id, email, name, lastname_paternal, created_at 
-                FROM users WHERE id = %s
-            """, (user_id,))
+        SELECT id, email, name, lastname_paternal, lastname_maternal,
+               avatar_url, bio, currently_working, working_hours_per_day,
+               stress_frequency, points, language, theme, created_at
+        FROM users 
+        WHERE id = %s
+    """, (user_id,))
             return cursor.fetchone()
         finally:
             Database.close_connection(connection, cursor)
@@ -27,7 +30,10 @@ class User:
                     hashed = bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt())
                     fields.append("password_hash = %s")
                     values.append(hashed)
-                elif key in ['name', 'lastname_paternal', 'email']:
+                elif key in ['name', 'lastname_paternal', 'email',
+                             'lastname_maternal','avatar_url','bio',
+                             'currently_working','working_hours_per_day',
+                             'stress_frequency']:
                     fields.append(f"{key} = %s")
                     values.append(value)
 
