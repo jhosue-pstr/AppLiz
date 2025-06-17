@@ -51,3 +51,13 @@ def token_required(f):
         return f(*args, **kwargs)
     
     return decorated
+
+
+
+
+# Configuración de uploads
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'mp4'}
+
+# Configuración de WebSocket
+SOCKETIO_MESSAGE_QUEUE = 'redis://localhost:6379/0'  # Para producción con múltiples workers
