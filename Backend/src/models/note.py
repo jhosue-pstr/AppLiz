@@ -14,6 +14,9 @@ class Note:
             )
             connection.commit()
             return cursor.lastrowid
+        except Exception as e:
+            connection.rollback()
+            raise e
         finally:
             Database.close_connection(connection, cursor)
 
@@ -23,14 +26,14 @@ class Note:
         cursor = connection.cursor(dictionary=True)
         try:
             cursor.execute(
-                "SELECT id, title, content FROM notes WHERE user_id = %s",
+                "SELECT id, title, content, color, pinned FROM notes WHERE user_id = %s",
                 (user_id,)
             )
             return cursor.fetchall()
+        except Exception as e:
+            raise e
         finally:
             Database.close_connection(connection, cursor)
-
-    
 
     @staticmethod
     def update(note_id, user_id, data):

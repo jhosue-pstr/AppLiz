@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'perfil.dart';
 import 'diario.dart';
+import 'Gestion.dart';
+import 'comunidad.dart';
+import 'apoyo.dart';
 
 class HomeScreen extends StatelessWidget {
   final String email;
@@ -206,11 +209,50 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              _buildColorBlock('Fuerza Charlie', Colors.green.shade700),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GestionToolsScreen(userId: userId),
+                    ),
+                  );
+                },
+                child: _buildColorBlock(
+                  'Herramientas de gestion',
+                  Colors.orange.shade700,
+                ),
+              ),
               SizedBox(height: 10),
-              _buildColorBlock('Fuerza Delta', Colors.orange.shade700),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ComunidadScreen(userId: userId),
+                    ),
+                  );
+                },
+                child: _buildColorBlock(
+                  'Comunidad',
+                  const Color.fromARGB(255, 48, 64, 133),
+                ),
+              ),
               SizedBox(height: 10),
-              _buildColorBlock('Fuerza Épsilon', Colors.purple.shade700),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ApoyoScreen(userId: userId),
+                    ),
+                  );
+                },
+                child: _buildColorBlock(
+                  'Recursos de apoyo',
+                  Colors.purple.shade700,
+                ),
+              ),
             ],
           ),
         ),

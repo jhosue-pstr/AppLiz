@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from src.config.settings import token_required
 from src.models.EmotionDiary import EmotionDiary
 from datetime import datetime
+from src.config.database import Database
 
 emotion_bp = Blueprint('emotion', __name__)
 
@@ -227,3 +228,20 @@ def delete_entry(entry_id):
             cursor.close()
         if connection:
             Database.close_connection(connection)
+
+@emotion_bp.route('/patterns', methods=['GET'])
+@token_required
+def get_emotional_patterns():
+    """Obtiene patrones emocionales detectados"""
+    try:
+        patterns = EmotionDiary.detect_patterns(request.user_id)
+        return jsonify({
+            "success": True,
+            "data": patterns
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Server Error",
+            "message": str(e)
+        }), 500            
