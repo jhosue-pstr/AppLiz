@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'notas.dart';
+import 'eventos.dart';
+import 'tarea.dart';
 
 class GestionToolsScreen extends StatelessWidget {
   final int userId;
@@ -26,14 +28,27 @@ class GestionToolsScreen extends StatelessWidget {
               ),
               child: _buildColorBlock('Notas', Colors.purple, Icons.note),
             ),
+
             GestureDetector(
-              onTap: () => _showSnackbar(context, 'Tareas presionado'),
-              child: _buildColorBlock('Tareas', Colors.blue, Icons.task),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventsScreen(userId: userId),
+                ),
+              ),
+              child: _buildColorBlock('Eventos', Colors.blue, Icons.task),
             ),
+
             GestureDetector(
-              onTap: () => _showSnackbar(context, 'Incidencias presionado'),
-              child: _buildColorBlock('Incidencias', Colors.red, Icons.warning),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TareasScreen(userId: userId),
+                ),
+              ),
+              child: _buildColorBlock('Tareas', Colors.red, Icons.task),
             ),
+
             GestureDetector(
               onTap: () => _showSnackbar(context, 'Eventos presionado'),
               child: _buildColorBlock('Eventos', Colors.green, Icons.event),
