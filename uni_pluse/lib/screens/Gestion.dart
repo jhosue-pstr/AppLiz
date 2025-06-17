@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:uni_pluse/screens/periodo.dart';
 import 'notas.dart';
 import 'eventos.dart';
 import 'tarea.dart';
+import 'periodo.dart';
 
 class GestionToolsScreen extends StatelessWidget {
   final int userId;
@@ -36,7 +38,7 @@ class GestionToolsScreen extends StatelessWidget {
                   builder: (context) => EventsScreen(userId: userId),
                 ),
               ),
-              child: _buildColorBlock('Eventos', Colors.blue, Icons.task),
+              child: _buildColorBlock('Eventos', Colors.blue, Icons.event),
             ),
 
             GestureDetector(
@@ -50,19 +52,12 @@ class GestionToolsScreen extends StatelessWidget {
             ),
 
             GestureDetector(
-              onTap: () => _showSnackbar(context, 'Eventos presionado'),
-              child: _buildColorBlock('Eventos', Colors.green, Icons.event),
-            ),
-            GestureDetector(
-              onTap: () => _showSnackbar(context, 'Asistencias presionado'),
-              child: _buildColorBlock(
-                'Asistencias',
-                Colors.amber,
-                Icons.people,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PeriodoScreen(userId: userId),
+                ),
               ),
-            ),
-            GestureDetector(
-              onTap: () => _showSnackbar(context, 'Cerrar periodo presionado'),
               child: _buildColorBlock(
                 'Cerrar periodo',
                 Colors.indigo,
