@@ -51,10 +51,8 @@ def after_request(response):
     return response
 
 from src.routes.auth import auth_bp
-from src.routes.diary import diary_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(diary_bp, url_prefix='/api/diary')
 app.register_blueprint(users_bp, url_prefix='/api/users')
 app.register_blueprint(emotion_bp, url_prefix='/api/emotion')
 app.register_blueprint(notes_bp, url_prefix='/api/notes')

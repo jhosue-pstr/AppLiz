@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
-
+        await prefs.setInt('user_id', data['user_id']);
         await prefs.setString('token', data['token']);
         await prefs.setString('email', data['email']);
         await prefs.setString('password_hash', data['password_hash'] ?? '');
@@ -74,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
           '/home',
           arguments: {
             'token': data['token'],
+            'user_id': int.parse(data['user_id'].toString()),
             'email': data['email'],
             'password_hash': data['password_hash'] ?? '',
             'name': data['name'],

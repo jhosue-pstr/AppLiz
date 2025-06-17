@@ -5,6 +5,7 @@ import 'diario.dart';
 
 class HomeScreen extends StatelessWidget {
   final String email;
+  final int userId;
   final String passwordHash;
   final String name;
   final String lastnamePaternal;
@@ -17,6 +18,7 @@ class HomeScreen extends StatelessWidget {
 
   HomeScreen({
     required this.email,
+    required this.userId,
     required this.passwordHash,
     required this.name,
     required this.lastnamePaternal,
@@ -194,7 +196,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DiarioScreen(userId: 1),
+                      builder: (context) => DiarioScreen(userId: userId),
                     ),
                   );
                 },
