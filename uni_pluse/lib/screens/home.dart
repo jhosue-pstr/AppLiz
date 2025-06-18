@@ -243,9 +243,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => ApoyoScreen(userId: userId),
-                    ),
+                    MaterialPageRoute(builder: (context) => ApoyoScreen()),
                   );
                 },
                 child: _buildColorBlock(

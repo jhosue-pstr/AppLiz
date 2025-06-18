@@ -1,106 +1,78 @@
-from flask import Flask, request, jsonify
-from functools import wraps
-import jwt
-from datetime import datetime, timedelta
 import os
-from src.config.database import Database
-from src.config.settings import token_required  
-from src.routes.users import users_bp
-from src.routes.emotion_diary import emotion_bp 
-from src.routes.notes import notes_bp
-from src.routes.tasks import tasks_bp
-from src.routes.events import events_bp
-from src.routes.periods import period_bp
-from src.routes.emergency_contacts import contacts_bp
-from src.routes.resources import resources_bp
-from src.routes.chat import chats_bp  # Blueprint del chat
+import jwt
+from datetime import timedelta
+from functools import wraps
+from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 
-# Configuración de la aplicación Flask
+# Configuración Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'tu_clave_secreta'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'tu_clave_secreta_aleatoria')
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
-app.config['JWT_SECRET_KEY'] = '1'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET', 'tu_clave_jwt_secreta')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=1440)
 
-# Configuración de SocketIO con async_mode
+# Configuración SocketIO
 socketio = SocketIO(app, 
                    cors_allowed_origins="*",
-                   async_mode='eventlet')  # Usar eventlet para mejor rendimiento
+                   async_mode='eventlet',
+                   logger=True,
+                   engineio_logger=True)
 
-# Decorador para verificación de token
+# Decorador JWT
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        if not token:
-            return jsonify({"error": "Token faltante"}), 401
-        
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Token no proporcionado o formato inválido"}), 401
+            
         try:
-            data = jwt.decode(token.split()[1], app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
-            request.user_id = data['user_id']
+            token = auth_header.split()[1]
+            payload = jwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+            request.user_id = payload['user_id']
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Token expirado"}), 401
         except jwt.InvalidTokenError:
             return jsonify({"error": "Token inválido"}), 401
-        
+        except Exception as e:
+            return jsonify({"error": f"Error de autenticación: {str(e)}"}), 401
+            
         return f(*args, **kwargs)
     return decorated
 
-# Configuración CORS mejorada
+# Configuración CORS
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
-    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     return response
 
-# Importar y registrar blueprints
+# Importar blueprints
 from src.routes.auth import auth_bp
+from src.routes.users import users_bp
+from src.routes.chat import chats_bp
 
-# Registrar todos los blueprints
+# Registrar blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(users_bp, url_prefix='/api/users')
-app.register_blueprint(emotion_bp, url_prefix='/api/emotion')
-app.register_blueprint(notes_bp, url_prefix='/api/notes')
-app.register_blueprint(tasks_bp, url_prefix='/api/tasks')
-app.register_blueprint(events_bp, url_prefix='/api/events')
-app.register_blueprint(period_bp, url_prefix='/api/period')
-app.register_blueprint(contacts_bp, url_prefix='/api/emergency-contacts')
-app.register_blueprint(resources_bp, url_prefix='/api/resources')
-app.register_blueprint(chats_bp, url_prefix='/api/chats')  # Registrar blueprint de chats
+app.register_blueprint(chats_bp, url_prefix='/api/chats')
 
-# Ruta de prueba mejorada
-@app.route('/')
-def home():
+# Importar y registrar namespaces de SocketIO
+from src.sockets.chat import ChatNamespace
+socketio.on_namespace(ChatNamespace('/chat'))
+
+# Ruta de estado
+@app.route('/api/status')
+def status_check():
     return jsonify({
-        "message": "¡Bienvenido a Uni-Pulse API!",
-        "status": "operativo",
-        "version": "1.0",
-        "endpoints": {
-            "auth": "/api/auth",
-            "users": "/api/users",
-            "chats": "/api/chats",
-            "emotions": "/api/emotion",
-            "notes": "/api/notes",
-            "tasks": "/api/tasks",
-            "events": "/api/events",
-            "periods": "/api/period",
-            "contacts": "/api/emergency-contacts",
-            "resources": "/api/resources"
-        }
+        "status": "active",
+        "message": "Servidor funcionando correctamente",
+        "socketio": "running"
     })
 
-# Manejo de errores global mejorado
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({"error": "Solicitud incorrecta", "details": str(error)}), 400
-
-@app.errorhandler(401)
-def unauthorized(error):
-    return jsonify({"error": "No autorizado"}), 401
-
+# Manejo de errores
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({"error": "Endpoint no encontrado"}), 404
@@ -109,18 +81,9 @@ def not_found(error):
 def internal_error(error):
     return jsonify({"error": "Error interno del servidor"}), 500
 
-# Punto de entrada principal mejorado
 if __name__ == '__main__':
-    # Crear carpeta de uploads si no existe
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
     
-    # Iniciar servidor con SocketIO
-    socketio.run(
-        app,
-        host='0.0.0.0',
-        port=5000,
-        debug=True,
-        use_reloader=True,
-        log_output=True
-    )
+    # En producción, sin debug ni recarga automática
+    socketio.run(app, host='0.0.0.0', port=5000)

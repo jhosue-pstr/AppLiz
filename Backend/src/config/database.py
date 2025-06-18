@@ -9,11 +9,11 @@ class Database:
         cls.__connection_pool = pooling.MySQLConnectionPool(
             pool_name="uni_pulse_pool",
             pool_size=5,
-            host="localhost",
+            host="yamabiko.proxy.rlwy.net",
             user="root",
-            password="",
-            database="UniPulse",
-            port=3306
+            password="JIVvbRgjWgWEykiknkjMHYjzGMdVkTPK",
+            database="railway",
+            port=52867
         )
 
     @classmethod
@@ -26,4 +26,5 @@ class Database:
             cursor.close()
         connection.close()
 
+# Inicializamos el pool de conexiones al arrancar
 Database.initialize()
