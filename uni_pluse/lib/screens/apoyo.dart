@@ -47,7 +47,8 @@ class _ApoyoScreenState extends State<ApoyoScreen> {
   }
 
   Future<void> fetchAdzunaJobs() async {
-    final url = 'http://127.0.0.1:5000/api/jobs/adzuna';
+    final url =
+        'https://appliz-backend-production.up.railway.app/api/jobs/adzuna';
 
     try {
       final response = await http.get(
@@ -80,15 +81,28 @@ class _ApoyoScreenState extends State<ApoyoScreen> {
     }
   }
 
-  void _launchURL(String url) async {
+  Future<void> _launchURL(BuildContext context, String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir el enlace')),
-      );
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode
+              .externalApplication, // Esto abrirá en el navegador externo
+          // Para Android también puedes usar:
+          // mode: LaunchMode.externalNonBrowserApplication // Para apps específicas
+        );
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir el enlace')),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     }
   }
 
@@ -113,7 +127,7 @@ class _ApoyoScreenState extends State<ApoyoScreen> {
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             final url = job['link'] ?? '';
-            if (url.isNotEmpty) _launchURL(url);
+            if (url.isNotEmpty) _launchURL(context, url);
           },
           child: Padding(
             padding: const EdgeInsets.all(16),

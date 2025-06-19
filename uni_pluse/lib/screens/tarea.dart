@@ -37,17 +37,20 @@ class _TareasScreenState extends State<TareasScreen> {
   Future<void> _loadTokenAndData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = prefs.getString('token')?.trim(); // Limpia espacios
+
+      // Debug: Verifica el token
+      debugPrint('Token recuperado: $token');
+      debugPrint(
+        'Longitud del token: ${token?.length}',
+      ); // Debería ser >100 chars
 
       if (token == null || token.isEmpty) {
         _showAuthError();
         return;
       }
 
-      setState(() {
-        _token = token;
-      });
-
+      setState(() => _token = token);
       await _fetchTasks();
     } catch (e) {
       _showError('Error al cargar datos: $e');
@@ -66,7 +69,7 @@ class _TareasScreenState extends State<TareasScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/tasks'),
+        Uri.parse('https://appliz-backend-production.up.railway.app/api/tasks'),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -121,7 +124,9 @@ class _TareasScreenState extends State<TareasScreen> {
 
       final response = _editingTaskId == null
           ? await http.post(
-              Uri.parse('http://127.0.0.1:5000/api/tasks'),
+              Uri.parse(
+                'https://appliz-backend-production.up.railway.app/api/tasks',
+              ),
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer $_token',
@@ -129,7 +134,9 @@ class _TareasScreenState extends State<TareasScreen> {
               body: json.encode(taskData),
             )
           : await http.put(
-              Uri.parse('http://127.0.0.1:5000/api/tasks/$_editingTaskId'),
+              Uri.parse(
+                'https://appliz-backend-production.up.railway.app/api/tasks/$_editingTaskId',
+              ),
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer $_token',
@@ -164,7 +171,9 @@ class _TareasScreenState extends State<TareasScreen> {
 
     try {
       final response = await http.delete(
-        Uri.parse('http://127.0.0.1:5000/api/tasks/$taskId'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/tasks/$taskId',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -188,7 +197,9 @@ class _TareasScreenState extends State<TareasScreen> {
 
     try {
       final response = await http.patch(
-        Uri.parse('http://127.0.0.1:5000/api/tasks/$taskId/complete'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/tasks/$taskId/complete',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 

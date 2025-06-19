@@ -38,10 +38,12 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
   Future<void> _loadTokenAndChats() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
+
     if (token == null || token.isEmpty) {
       Navigator.pushReplacementNamed(context, '/login');
       return;
     }
+
     _token = token;
     await _connectSocket();
     await _fetchChats();
@@ -49,11 +51,14 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
   }
 
   Future<void> _connectSocket() async {
-    _socket = IO.io('http://127.0.0.1:5000', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-      'extraHeaders': {'Authorization': 'Bearer $_token'},
-    });
+    _socket = IO.io(
+      'https://appliz-backend-production.up.railway.app',
+      <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': false,
+        'extraHeaders': {'Authorization': 'Bearer $_token'},
+      },
+    );
     _socket?.connect();
 
     _socket?.on('connect', (_) => print('Socket conectado'));
@@ -64,7 +69,9 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
   Future<void> _fetchChats() async {
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/chats'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/chats/',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -214,7 +221,9 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
                 }
 
                 final res = await http.post(
-                  Uri.parse('http://127.0.0.1:5000/api/chats/private'),
+                  Uri.parse(
+                    'https://appliz-backend-production.up.railway.app/api/chats/private',
+                  ),
                   headers: {
                     'Authorization': 'Bearer $_token',
                     'Content-Type': 'application/json',
@@ -245,7 +254,7 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
     // Obtener usuarios solo cuando se va a crear un grupo
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/users'),
+        Uri.parse('https://appliz-backend-production.up.railway.app/api/users'),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -316,7 +325,9 @@ class _ComunidadScreenState extends State<ComunidadScreen> {
                       }
 
                       final res = await http.post(
-                        Uri.parse('http://127.0.0.1:5000/api/chats/group'),
+                        Uri.parse(
+                          'https://appliz-backend-production.up.railway.app/api/chats/group',
+                        ),
                         headers: {
                           'Authorization': 'Bearer $_token',
                           'Content-Type': 'application/json',

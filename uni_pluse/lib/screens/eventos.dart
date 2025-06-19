@@ -37,17 +37,20 @@ class _EventsScreenState extends State<EventsScreen> {
   Future<void> _loadTokenAndData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = prefs.getString('token')?.trim(); // Limpia espacios
+
+      // Debug: Verifica el token
+      debugPrint('Token recuperado: $token');
+      debugPrint(
+        'Longitud del token: ${token?.length}',
+      ); // Debería ser >100 chars
 
       if (token == null || token.isEmpty) {
         _showAuthError();
         return;
       }
 
-      setState(() {
-        _token = token;
-      });
-
+      setState(() => _token = token);
       await _fetchEvents();
     } catch (e) {
       _showError('Error al cargar datos: $e');
@@ -66,7 +69,9 @@ class _EventsScreenState extends State<EventsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/events'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/events',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -113,7 +118,9 @@ class _EventsScreenState extends State<EventsScreen> {
 
       final response = _editingEventId == null
           ? await http.post(
-              Uri.parse('http://127.0.0.1:5000/api/events'),
+              Uri.parse(
+                'https://appliz-backend-production.up.railway.app/api/events',
+              ),
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer $_token',
@@ -121,7 +128,9 @@ class _EventsScreenState extends State<EventsScreen> {
               body: json.encode(eventData),
             )
           : await http.put(
-              Uri.parse('http://127.0.0.1:5000/api/events/$_editingEventId'),
+              Uri.parse(
+                'https://appliz-backend-production.up.railway.app/api/events/$_editingEventId',
+              ),
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer $_token',
@@ -156,7 +165,9 @@ class _EventsScreenState extends State<EventsScreen> {
 
     try {
       final response = await http.delete(
-        Uri.parse('http://127.0.0.1:5000/api/events/$eventId'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/events/$eventId',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 

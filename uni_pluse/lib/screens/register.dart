@@ -33,7 +33,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'assets/images/avatar1.png'; // Avatar seleccionado por defecto
 
   Future<void> _register() async {
-    final String apiUrl = 'http://127.0.0.1:5000/api/auth/register';
+    final String apiUrl =
+        'https://appliz-backend-production.up.railway.app/api/auth/register';
 
     setState(() {
       _isLoading = true;

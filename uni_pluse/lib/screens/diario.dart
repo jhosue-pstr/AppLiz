@@ -41,8 +41,14 @@ class _DiarioScreenState extends State<DiarioScreen> {
 
   Future<void> _loadToken() async {
     final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token')?.trim(); // Elimina espacios
+    print('Token recuperado: $token'); // Debug
+    print(
+      'Longitud del token: ${token?.length}',
+    ); // Debería ser > 100 caracteres
+
     setState(() {
-      _token = prefs.getString('token');
+      _token = token;
     });
   }
 
@@ -65,7 +71,7 @@ class _DiarioScreenState extends State<DiarioScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-          'http://127.0.0.1:5000/api/emotion/entries?days=30&page=1&per_page=20',
+          'https://appliz-backend-production.up.railway.app/api/emotion/entries?days=30&page=1&per_page=20',
         ),
         headers: {'Authorization': 'Bearer $_token'},
       );
@@ -106,7 +112,9 @@ class _DiarioScreenState extends State<DiarioScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/emotion/stats'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/emotion/stats',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -129,7 +137,9 @@ class _DiarioScreenState extends State<DiarioScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/emotion/patterns'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/emotion/patterns',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -810,7 +820,9 @@ class _DiarioScreenState extends State<DiarioScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/api/emotion/entries'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/emotion/entries',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -843,7 +855,9 @@ class _DiarioScreenState extends State<DiarioScreen> {
 
     try {
       final response = await http.delete(
-        Uri.parse('http://127.0.0.1:5000/api/emotion/entries/$entryId'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/emotion/entries/$entryId',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 

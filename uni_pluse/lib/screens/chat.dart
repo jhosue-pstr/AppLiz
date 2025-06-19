@@ -38,7 +38,9 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _fetchMessages() async {
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/chats/${widget.chatId}/messages'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/chats/${widget.chatId}/messages',
+        ),
         headers: {'Authorization': 'Bearer ${widget.token}'},
       );
 
@@ -68,7 +70,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/api/chats/${widget.chatId}/messages'),
+      Uri.parse(
+        'https://appliz-backend-production.up.railway.app/api/chats/${widget.chatId}/messages',
+      ),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',

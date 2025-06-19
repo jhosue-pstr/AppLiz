@@ -39,7 +39,9 @@ class _SeguridadScreenState extends State<SeguridadScreen> {
 
     try {
       final response = await http.put(
-        Uri.parse('http://127.0.0.1:5000/api/users/me/password'),
+        Uri.parse(
+          'http://appliz-backend-production.up.railway.app/api/users/me/password',
+        ),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
@@ -95,7 +97,9 @@ class _SeguridadScreenState extends State<SeguridadScreen> {
     if (confirm == true) {
       try {
         final response = await http.delete(
-          Uri.parse('http://127.0.0.1:5000/api/users/me'),
+          Uri.parse(
+            'http://appliz-backend-production.up.railway.app/api/users/me',
+          ),
           headers: {'Authorization': 'Bearer $_token'},
         );
 

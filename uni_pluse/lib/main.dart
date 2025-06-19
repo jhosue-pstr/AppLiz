@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaleFactor: acces.textScale),
       child: MaterialApp(
-        title: 'App Liz',
+        title: 'Uni Pulse',
         debugShowCheckedModeBanner: false,
         locale: context.locale,
         supportedLocales: context.supportedLocales,

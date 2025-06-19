@@ -60,7 +60,9 @@ class _PeriodoScreenState extends State<PeriodoScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/user/me'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/user/me',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -85,7 +87,9 @@ class _PeriodoScreenState extends State<PeriodoScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/period/history'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/period/history',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -136,7 +140,9 @@ class _PeriodoScreenState extends State<PeriodoScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/api/period/close'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/period/close',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',

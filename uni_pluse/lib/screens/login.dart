@@ -14,7 +14,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _login() async {
-    final String apiUrl = 'http://127.0.0.1:5000/api/auth/login';
+    final String apiUrl =
+        'https://appliz-backend-production.up.railway.app/api/auth/login';
 
     setState(() {
       _isLoading = true;

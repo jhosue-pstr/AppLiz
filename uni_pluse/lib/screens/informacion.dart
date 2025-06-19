@@ -33,19 +33,34 @@ class _InformacionScreenState extends State<InformacionScreen> {
   }
 
   Future<void> _loadTokenAndFetchProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('token');
-    if (_token != null) {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _token = prefs.getString('token')?.trim(); // Limpia espacios
+
+      if (_token == null || _token!.isEmpty) {
+        throw Exception('Token no encontrado');
+      }
+
+      // Debug: Verifica el token
+      debugPrint('Token recuperado: $_token');
+      debugPrint('Longitud del token: ${_token?.length}');
+
       await _fetchProfile();
-    } else {
+    } catch (e) {
       setState(() => isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al cargar token: $e')));
+      Navigator.pushReplacementNamed(context, '/login'); // Redirige a login
     }
   }
 
   Future<void> _fetchProfile() async {
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5000/api/users/me'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/users/me',
+        ),
         headers: {'Authorization': 'Bearer $_token'},
       );
 
@@ -79,7 +94,9 @@ class _InformacionScreenState extends State<InformacionScreen> {
 
     try {
       final response = await http.patch(
-        Uri.parse('http://127.0.0.1:5000/api/users/me'),
+        Uri.parse(
+          'https://appliz-backend-production.up.railway.app/api/users/me',
+        ),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
