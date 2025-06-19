@@ -229,7 +229,8 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ComunidadScreen(userId: userId),
+                      builder: (context) =>
+                          ComunidadScreen(userId: userId, name: name),
                     ),
                   );
                 },

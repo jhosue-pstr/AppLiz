@@ -324,7 +324,9 @@ class _DiarioScreenState extends State<DiarioScreen> {
   }
 
   Widget _buildStatsTab() {
-    if (_stats.isEmpty) {
+    if ((_stats['weekly_summary'] == null ||
+            (_stats['weekly_summary'] as List).isEmpty) &&
+        (_patterns['most_common'] == null)) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -345,27 +347,58 @@ class _DiarioScreenState extends State<DiarioScreen> {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_stats['weekly_summary'] != null)
+            // Gráfico de emociones más frecuentes
+            if (_patterns['patterns'] != null)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       const Text(
-                        'Resumen Semanal',
+                        'Emociones más frecuentes',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      SizedBox(height: 200, child: _buildWeeklyChart()),
+                      SizedBox(
+                        height: 300,
+                        child: _buildEmotionFrequencyChart(),
+                      ),
                     ],
                   ),
                 ),
               ),
+
             const SizedBox(height: 20),
+
+            // Gráfico de intensidad promedio
+            if (_patterns['patterns'] != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Intensidad promedio por emoción',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(height: 300, child: _buildIntensityChart()),
+                    ],
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 20),
+
+            // Resumen de patrones
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -373,19 +406,14 @@ class _DiarioScreenState extends State<DiarioScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Detección de Patrones',
+                      'Resumen de patrones',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      'Emoción más frecuente: ${_patterns['dominant_emotion']?.toString() ?? 'No disponible'}',
-                    ),
-                    Text(
-                      'Día más común: ${_patterns['most_frequent_day']?.toString() ?? 'No disponible'}',
-                    ),
+                    _buildPatternsSummary(),
                   ],
                 ),
               ),
@@ -394,6 +422,331 @@ class _DiarioScreenState extends State<DiarioScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildEmotionFrequencyChart() {
+    try {
+      final patterns = (_patterns['patterns'] as List?) ?? [];
+      if (patterns.isEmpty) {
+        return const Center(child: Text('No hay datos para mostrar'));
+      }
+
+      // Agrupar por emoción y contar frecuencia
+      final emotionCounts = <String, int>{};
+      for (var pattern in patterns.cast<Map<String, dynamic>>()) {
+        final emotion = pattern['emotion']?.toString() ?? 'Desconocido';
+        emotionCounts[emotion] =
+            (emotionCounts[emotion] ?? 0) + (pattern['count'] as int? ?? 0);
+      }
+
+      final sortedEmotions = emotionCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      return BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          barTouchData: BarTouchData(
+            enabled: true,
+            touchTooltipData: BarTouchTooltipData(
+              tooltipBgColor: Colors.white,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final emotion = sortedEmotions[group.x.toInt()].key;
+                final count = sortedEmotions[group.x.toInt()].value;
+                final emotionData = _emotions.firstWhere(
+                  (e) => e['value'] == emotion,
+                  orElse: () => {'emoji': '', 'color': Colors.grey},
+                );
+
+                return BarTooltipItem(
+                  '$emotion: $count veces\n${emotionData['emoji']}',
+                  TextStyle(
+                    color: emotionData['color'] as Color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
+            ),
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() >= sortedEmotions.length)
+                    return const SizedBox();
+                  final emotion = sortedEmotions[value.toInt()].key;
+                  final emotionData = _emotions.firstWhere(
+                    (e) => e['value'] == emotion,
+                    orElse: () => {'emoji': ''},
+                  );
+                  return Text('${emotionData['emoji']}\n$emotion');
+                },
+                reservedSize: 50,
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  return Text(value.toInt().toString());
+                },
+                reservedSize: 30,
+              ),
+            ),
+            rightTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
+          ),
+          gridData: const FlGridData(show: true),
+          borderData: FlBorderData(show: true),
+          barGroups: sortedEmotions.asMap().entries.map((entry) {
+            final index = entry.key;
+            final emotion = entry.value.key;
+            final count = entry.value.value;
+
+            final emotionData = _emotions.firstWhere(
+              (e) => e['value'] == emotion,
+              orElse: () => {'color': Colors.grey},
+            );
+
+            return BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: count.toDouble(),
+                  color: emotionData['color'] as Color,
+                  width: 22,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ],
+              showingTooltipIndicators: [0],
+            );
+          }).toList(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error al construir gráfico de frecuencia: $e');
+      return Center(child: Text('Error: ${e.toString()}'));
+    }
+  }
+
+  Widget _buildIntensityChart() {
+    try {
+      final patterns = (_patterns['patterns'] as List?) ?? [];
+      if (patterns.isEmpty) {
+        return const Center(child: Text('No hay datos para mostrar'));
+      }
+
+      // Agrupar por emoción y calcular intensidad promedio
+      final emotionIntensities = <String, double>{};
+      final emotionCounts = <String, int>{};
+
+      for (var pattern in patterns.cast<Map<String, dynamic>>()) {
+        final emotion = pattern['emotion']?.toString() ?? 'Desconocido';
+        final intensity = _parseDouble(pattern['avg_intensity']);
+        final count = _parseInt(pattern['count']);
+
+        if (emotionIntensities.containsKey(emotion)) {
+          final currentTotal =
+              emotionIntensities[emotion]! * emotionCounts[emotion]!;
+          emotionIntensities[emotion] =
+              (currentTotal + intensity * count) /
+              (emotionCounts[emotion]! + count);
+        } else {
+          emotionIntensities[emotion] = intensity;
+        }
+        emotionCounts[emotion] = (emotionCounts[emotion] ?? 0) + count;
+      }
+
+      final sortedEmotions = emotionIntensities.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      return BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          barTouchData: BarTouchData(
+            enabled: true,
+            touchTooltipData: BarTouchTooltipData(
+              tooltipBgColor: Colors.white,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final emotion = sortedEmotions[group.x.toInt()].key;
+                final intensity = sortedEmotions[group.x.toInt()].value;
+                final emotionData = _emotions.firstWhere(
+                  (e) => e['value'] == emotion,
+                  orElse: () => {'emoji': '', 'color': Colors.grey},
+                );
+
+                return BarTooltipItem(
+                  '$emotion: ${intensity.toStringAsFixed(1)}/5\n${emotionData['emoji']}',
+                  TextStyle(
+                    color: emotionData['color'] as Color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
+            ),
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() >= sortedEmotions.length)
+                    return const SizedBox();
+                  final emotion = sortedEmotions[value.toInt()].key;
+                  final emotionData = _emotions.firstWhere(
+                    (e) => e['value'] == emotion,
+                    orElse: () => {'emoji': ''},
+                  );
+                  return Text('${emotionData['emoji']}\n$emotion');
+                },
+                reservedSize: 50,
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  return Text('${value.toInt()}');
+                },
+                reservedSize: 30,
+              ),
+            ),
+            rightTitles: const AxisTitles(),
+            topTitles: const AxisTitles(),
+          ),
+          gridData: const FlGridData(show: true),
+          borderData: FlBorderData(show: true),
+          barGroups: sortedEmotions.asMap().entries.map((entry) {
+            final index = entry.key;
+            final emotion = entry.value.key;
+            final intensity = entry.value.value;
+
+            final emotionData = _emotions.firstWhere(
+              (e) => e['value'] == emotion,
+              orElse: () => {'color': Colors.grey},
+            );
+
+            return BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: intensity,
+                  color: emotionData['color'] as Color,
+                  width: 22,
+                  borderRadius: BorderRadius.circular(4),
+                  backDrawRodData: BackgroundBarChartRodData(
+                    show: true,
+                    toY: 5,
+                    color: Colors.grey[200],
+                  ),
+                ),
+              ],
+              showingTooltipIndicators: [0],
+            );
+          }).toList(),
+          maxY: 5,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error al construir gráfico de intensidad: $e');
+      return Center(child: Text('Error: ${e.toString()}'));
+    }
+  }
+
+  // Función auxiliar para parsear valores numéricos de manera segura
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  // Función auxiliar para parsear valores enteros de manera segura
+  int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  Widget _buildPatternsSummary() {
+    final mostCommon = _patterns['most_common'] as Map<String, dynamic>? ?? {};
+    final dayPatterns =
+        _patterns['day_patterns'] as Map<String, dynamic>? ?? {};
+    final timePatterns =
+        _patterns['time_patterns'] as Map<String, dynamic>? ?? {};
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (mostCommon.isNotEmpty) ...[
+          const Text(
+            'Más común:',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text('• Emoción: ${mostCommon['emotion'] ?? 'N/A'}'),
+          Text(
+            '• Día: ${_translateDay(mostCommon['day']?.toString()) ?? 'N/A'}',
+          ),
+          const SizedBox(height: 10),
+        ],
+
+        if (dayPatterns.isNotEmpty) ...[
+          const Text(
+            'Por día de la semana:',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          ...dayPatterns.entries.map((entry) {
+            final day = entry.key;
+            final patterns =
+                (entry.value as List?)?.cast<Map<String, dynamic>>() ?? [];
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('• ${_translateDay(day)}:'),
+                ...patterns.map(
+                  (pattern) => Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Text(
+                      '- ${pattern['emotion']} (${pattern['count']} veces, Intensidad: ${(pattern['avg_intensity'] as num?)?.toStringAsFixed(1) ?? 'N/A'}/5)',
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+
+  String _translateDay(String? day) {
+    if (day == null) return 'N/A';
+
+    switch (day.toLowerCase()) {
+      case 'monday':
+        return 'Lunes';
+      case 'tuesday':
+        return 'Martes';
+      case 'wednesday':
+        return 'Miércoles';
+      case 'thursday':
+        return 'Jueves';
+      case 'friday':
+        return 'Viernes';
+      case 'saturday':
+        return 'Sábado';
+      case 'sunday':
+        return 'Domingo';
+      default:
+        return day;
+    }
   }
 
   Widget _buildWeeklyChart() {
